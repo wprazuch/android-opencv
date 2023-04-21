@@ -30,10 +30,14 @@ import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.support.common.ops.NormalizeOp
+import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import org.tensorflow.lite.support.image.TensorImage
+import org.tensorflow.lite.support.image.ops.*
 
 fun padToBoundingBox(image: Mat, offsetHeight: Int, offsetWidth: Int, targetHeight: Int, targetWidth: Int): Mat {
     val imageHeight = image.height()
@@ -129,69 +133,69 @@ class MainActivity : Activity() {
 
         println("TESTESTEST")
 
-        var crop = Mat()
+//        var crop = Mat()
 
-        if (mapped_crop.type() == CvType.CV_8U) {
-            crop.convertTo(crop, CvType.CV_64FC3)
-            Core.divide(crop, Scalar(255.0), crop)
-        }
-        else if (mapped_crop.type() == CvType.CV_8UC4) {
-            Imgproc.cvtColor(mapped_crop, crop, Imgproc.COLOR_RGBA2RGB)
-            crop.convertTo(crop, CvType.CV_64FC3)
-            Core.divide(crop, Scalar(255.0), crop)
-        }
+//        if (mapped_crop.type() == CvType.CV_8U) {
+//            crop.convertTo(crop, CvType.CV_64FC3)
+//            Core.divide(crop, Scalar(255.0), crop)
+//        }
+//        else if (mapped_crop.type() == CvType.CV_8UC4) {
+//            Imgproc.cvtColor(mapped_crop, crop, Imgproc.COLOR_RGBA2RGB)
+//            crop.convertTo(crop, CvType.CV_64FC3)
+//            Core.divide(crop, Scalar(255.0), crop)
+//        }
 
-        Imgproc.resize(crop, crop, outputSize, 0.0, 0.0, Imgproc.INTER_LINEAR)
+//        Imgproc.resize(crop, crop, outputSize, 0.0, 0.0, Imgproc.INTER_LINEAR)
 
 // In that case we need to pad because we want to enforce both width and height
         val offset = Pair(0, 0)
-        val paddedImg = padToBoundingBox(crop, offset.first, offset.second, 32, 128)
+//        val paddedImg = padToBoundingBox(crop, offset.first, offset.second, 32, 128)
 
-        val batches = listOf(paddedImg)
+//        val batches = listOf(paddedImg)
 
 
 
-//        val mean = MatOfDouble(0.6940000057220459, 0.6949999928474426, 0.6930000185966492)
-//        val std = MatOfDouble(0.299, 0.296, 0.301)
-
-        val width = 32
-        val height = 128
-        val depth = 3
-        val arr = Array(width) { Array(height) { DoubleArray(depth) } }
-
-        // Fill the array with unique values for each channel
-        for (i in 0 until width) {
-            for (j in 0 until height) {
-                arr[i][j][0] = 0.6940000057220459
-                arr[i][j][1] = 0.6949999928474426
-                arr[i][j][2] = 0.6930000185966492
-            }
-        }
-
-        // Create a Mat object from the array
-        val mean = Mat(width, height, CvType.CV_64FC3)
-        for (i in 0 until width) {
-            for (j in 0 until height) {
-                mean.put(i, j, *arr[i][j])
-            }
-        }
-
-        // Fill the array with unique values for each channel
-        for (i in 0 until width) {
-            for (j in 0 until height) {
-                arr[i][j][0] = 0.299
-                arr[i][j][1] = 0.296
-                arr[i][j][2] = 0.301
-            }
-        }
-
-        // Create a Mat object from the array
-        val std = Mat(width, height, CvType.CV_64FC3)
-        for (i in 0 until width) {
-            for (j in 0 until height) {
-                std.put(i, j, *arr[i][j])
-            }
-        }
+////        val mean = MatOfDouble(0.6940000057220459, 0.6949999928474426, 0.6930000185966492)
+////        val std = MatOfDouble(0.299, 0.296, 0.301)
+//
+//        val width = 32
+//        val height = 128
+//        val depth = 3
+//        val arr = Array(width) { Array(height) { DoubleArray(depth) } }
+//
+//        // Fill the array with unique values for each channel
+//        for (i in 0 until width) {
+//            for (j in 0 until height) {
+//                arr[i][j][0] = 0.6940000057220459
+//                arr[i][j][1] = 0.6949999928474426
+//                arr[i][j][2] = 0.6930000185966492
+//            }
+//        }
+//
+//        // Create a Mat object from the array
+//        val mean = Mat(width, height, CvType.CV_64FC3)
+//        for (i in 0 until width) {
+//            for (j in 0 until height) {
+//                mean.put(i, j, *arr[i][j])
+//            }
+//        }
+//
+//        // Fill the array with unique values for each channel
+//        for (i in 0 until width) {
+//            for (j in 0 until height) {
+//                arr[i][j][0] = 0.299
+//                arr[i][j][1] = 0.296
+//                arr[i][j][2] = 0.301
+//            }
+//        }
+//
+//        // Create a Mat object from the array
+//        val std = Mat(width, height, CvType.CV_64FC3)
+//        for (i in 0 until width) {
+//            for (j in 0 until height) {
+//                std.put(i, j, *arr[i][j])
+//            }
+//        }
 
 //        val mean = MatOfDouble(128, 32, CvType.CV_64FC3)
 //        for (i in 0 until mean.rows()) {
@@ -217,15 +221,27 @@ class MainActivity : Activity() {
         // reshape the DoubleArray into a Mat object of size 128x3x3
 //        val meanMat = Mat(128, 3, CvType.CV_64FC3, meanArray).reshape(3, intArrayOf(128, 3, 3))
 
-        Core.subtract(paddedImg, mean, paddedImg)
-        Core.divide(paddedImg, std, paddedImg)
+//        Core.subtract(paddedImg, mean, paddedImg)
+//        Core.divide(paddedImg, std, paddedImg)
 
-
+//        Core.subtract(paddedImg, Scalar(0.694), paddedImg)
+//        Core.divide(paddedImg, Scalar(0.299), paddedImg)
 
         println("TESTESTES")
 
 
         val model = KerasSavedTextRecognizer.newInstance(this)
+//        val bitmap2 = Bitmap.createBitmap(paddedImg.cols(), paddedImg.rows(), Bitmap.Config.RGBA_F16)
+        var tensorImage = TensorImage.fromBitmap(bitmap)
+
+        val imageProcessorBuilder = ImageProcessor.Builder()
+        imageProcessorBuilder.add(ResizeOp(32, 128, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
+        imageProcessorBuilder.add(NormalizeOp(0.0f, 255.0f))
+        imageProcessorBuilder.add(NormalizeOp(0.694f, 0.299f))
+        val imageProcessor = imageProcessorBuilder.build()
+
+
+        tensorImage = imageProcessor.process(tensorImage)
 
 // Creates inputs for reference.
         val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
@@ -240,10 +256,10 @@ class MainActivity : Activity() {
 //        paddedImg.convertTo(matOfDouble, CvType.CV_64FC3)
 //        val pixelValues = matOfDouble.toArray()
 
-        val numElements = paddedImg.total().toInt() * paddedImg.channels()
-        val floatBuffer = FloatArray(numElements)
-        paddedImg.convertTo(paddedImg, CvType.CV_32FC1)
-        paddedImg.get(0, 0, floatBuffer)
+//        val numElements = paddedImg.total().toInt() * paddedImg.channels()
+//        val floatBuffer = FloatArray(numElements)
+//        paddedImg.convertTo(paddedImg, CvType.CV_32FC1)
+//        paddedImg.get(0, 0, floatBuffer)
 
 //        val byteOrder = ByteOrder.nativeOrder()
 //// Calculate the number of pixels in the image
@@ -256,7 +272,7 @@ class MainActivity : Activity() {
 //        paddedImg.get(0, 0, pixelValues)
 
 
-        inputFeature0.loadArray(floatBuffer)
+        inputFeature0.loadBuffer(tensorImage.tensorBuffer.buffer, intArrayOf(1, 32, 128, 3))
 
 // Runs model inference and gets result.
         val outputs = model.process(inputFeature0)
