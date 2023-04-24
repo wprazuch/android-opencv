@@ -249,6 +249,11 @@ class MainActivity : Activity() {
 //        Core.subtract(paddedImg, Scalar(0.694), paddedImg)
 //        Core.divide(paddedImg, Scalar(0.299), paddedImg)
 
+
+
+
+
+
         println("TESTESTES")
 //
 //        val modelFile = "keras_saved_text_recognizer"
@@ -256,7 +261,18 @@ class MainActivity : Activity() {
 //        val (inputShape, outputShape) = getModelInputOutputShapes(model)
 
 
-        val model = KerasSavedTextRecognizer.newInstance(this)
+        val MODEL_ASSETS_PATH = "text_recognizer.tflite"
+        val assetFileDescriptor = assets.openFd(MODEL_ASSETS_PATH)
+        val fileInputStream = FileInputStream(assetFileDescriptor.getFileDescriptor())
+        val fileChannel = fileInputStream.getChannel()
+        val startoffset = assetFileDescriptor.getStartOffset()
+        val declaredLength = assetFileDescriptor.getDeclaredLength()
+        val modelFile =  fileChannel.map(FileChannel.MapMode.READ_ONLY, startoffset, declaredLength)
+
+        val interpreter = Interpreter( modelFile )
+//        interpreter.run( inputs , outputs )
+
+//        val model = KerasSavedTextRecognizer.newInstance(this)
         var tensorImage = TensorImage.fromBitmap(bitmap)
 
         val imageProcessorBuilder = ImageProcessor.Builder()
@@ -267,18 +283,30 @@ class MainActivity : Activity() {
 
         tensorImage = imageProcessor.process(tensorImage)
 
-        println(tensorImage.dataType)
 
-// Creates inputs for reference.
-        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
-        inputFeature0.loadBuffer(tensorImage.buffer)
+        var input_ = interpreter.getInputTensor(0)
+        var output_ = interpreter.getOutputTensor(0)
 
-// Runs model inference and gets result.
-        val outputs = model.process(inputFeature0)
-        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
+        interpreter.run(input_, output_)
 
-// Releases model resources if no longer used.
-        model.close()
+//        input_ = tensorImage.tensorBuffer
+        println("TESTEST")
+//        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
+//        inputFeature0.loadBuffer(tensorImage.buffer)
+//        val outputs = interpreter.run(inputFeature0, )
+//
+//        println(tensorImage.dataType)
+//
+//// Creates inputs for reference.
+//        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
+//        inputFeature0.loadBuffer(tensorImage.buffer)
+//
+//// Runs model inference and gets result.
+//        val outputs = model.process(inputFeature0)
+//        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
+//
+//// Releases model resources if no longer used.
+//        model.close()
 
 
         println("TESTESTES2")
