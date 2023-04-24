@@ -2,6 +2,7 @@ package com.example.nativeopencvandroidtemplate
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -38,6 +39,10 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.image.ops.*
+import java.io.FileInputStream
+import java.io.RandomAccessFile
+import java.nio.MappedByteBuffer
+import java.nio.channels.FileChannel
 
 fun padToBoundingBox(image: Mat, offsetHeight: Int, offsetWidth: Int, targetHeight: Int, targetWidth: Int): Mat {
     val imageHeight = image.height()
@@ -59,6 +64,23 @@ fun padToBoundingBox(image: Mat, offsetHeight: Int, offsetWidth: Int, targetHeig
     val croppedImage = Mat(paddedImage, Rect(Point(padLeft.toDouble(), padTop.toDouble()), Size(targetWidth.toDouble(), targetHeight.toDouble())))
 
     return croppedImage
+}
+
+fun loadModelFile(context: Context, filename: String): MappedByteBuffer {
+    val assetManager = context.assets
+    val assetFileDescriptor = assetManager.openFd(filename)
+    val inputStream = FileInputStream(assetFileDescriptor.fileDescriptor)
+    val startOffset = assetFileDescriptor.startOffset
+    val declaredLength = assetFileDescriptor.declaredLength
+
+    val buffer = inputStream.channel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+    return buffer
+}
+
+fun getModelInputOutputShapes(model: Interpreter): Pair<IntArray, IntArray> {
+    val inputShape = model.getInputTensor(0).shape()
+    val outputShape = model.getOutputTensor(0).shape()
+    return Pair(inputShape, outputShape)
 }
 class MainActivity : Activity() {
 
@@ -228,10 +250,13 @@ class MainActivity : Activity() {
 //        Core.divide(paddedImg, Scalar(0.299), paddedImg)
 
         println("TESTESTES")
+//
+//        val modelFile = "keras_saved_text_recognizer"
+//        val model = Interpreter(loadModelFile(this, modelFile))
+//        val (inputShape, outputShape) = getModelInputOutputShapes(model)
 
 
         val model = KerasSavedTextRecognizer.newInstance(this)
-//        val bitmap2 = Bitmap.createBitmap(paddedImg.cols(), paddedImg.rows(), Bitmap.Config.RGBA_F16)
         var tensorImage = TensorImage.fromBitmap(bitmap)
 
         val imageProcessorBuilder = ImageProcessor.Builder()
@@ -240,11 +265,57 @@ class MainActivity : Activity() {
         imageProcessorBuilder.add(NormalizeOp(0.694f, 0.299f))
         val imageProcessor = imageProcessorBuilder.build()
 
-
         tensorImage = imageProcessor.process(tensorImage)
+
+        println(tensorImage.dataType)
 
 // Creates inputs for reference.
         val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
+        inputFeature0.loadBuffer(tensorImage.buffer)
+
+// Runs model inference and gets result.
+        val outputs = model.process(inputFeature0)
+        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
+
+// Releases model resources if no longer used.
+        model.close()
+
+
+        println("TESTESTES2")
+//        val tfliteModel = File(assets.open("keras_saved_text_recognizer").toString())
+//        val tfliteBuffer = tfliteModel.readBytes()
+//        val tfliteModelBuffer = ByteBuffer.allocateDirect(tfliteBuffer.size)
+//        tfliteModelBuffer.order(ByteOrder.nativeOrder())
+//        tfliteModelBuffer.put(tfliteBuffer)
+//
+//        val tflite = Interpreter(tfliteModelBuffer)
+//
+//        val inputShape = tflite.getInputTensor(0).shape()
+//        val inputDataType = tflite.getInputTensor(0).dataType()
+//        val inputBuffer = ByteBuffer.allocateDirect(4 * inputShape[1] * inputShape[2] * inputShape[3])
+//        inputBuffer.order(ByteOrder.nativeOrder())
+
+// Fill the input buffer with your input data
+// ...
+
+//        val inputs = arrayOf(inputBuffer)
+
+
+//        val model = KerasSavedTextRecognizer.newInstance(this)
+//        val bitmap2 = Bitmap.createBitmap(paddedImg.cols(), paddedImg.rows(), Bitmap.Config.RGBA_F16)
+//        var tensorImage = TensorImage.fromBitmap(bitmap)
+//
+//        val imageProcessorBuilder = ImageProcessor.Builder()
+//        imageProcessorBuilder.add(ResizeOp(32, 128, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
+//        imageProcessorBuilder.add(NormalizeOp(0.0f, 255.0f))
+//        imageProcessorBuilder.add(NormalizeOp(0.694f, 0.299f))
+//        val imageProcessor = imageProcessorBuilder.build()
+//
+//
+//        tensorImage = imageProcessor.process(tensorImage)
+//
+//// Creates inputs for reference.
+//        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
 //        val bitmap2 = Bitmap.createBitmap(paddedImg.cols(), paddedImg.rows(), Bitmap.Config.RGBA_F16)
 //        Utils.matToBitmap(paddedImg, bitmap2)
 //        val byteBuffer = ByteBuffer.allocate(bitmap2.byteCount)
@@ -272,13 +343,13 @@ class MainActivity : Activity() {
 //        paddedImg.get(0, 0, pixelValues)
 
 
-        inputFeature0.loadBuffer(tensorImage.tensorBuffer.buffer, intArrayOf(1, 32, 128, 3))
-
-// Runs model inference and gets result.
-        val outputs = model.process(inputFeature0)
-        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
-
-        model.close()
+//        inputFeature0.loadBuffer(tensorImage.tensorBuffer.buffer, intArrayOf(1, 32, 128, 3))
+//
+//// Runs model inference and gets result.
+//        val outputs = model.process(inputFeature0)
+//        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
+//
+//        model.close()
 
 
 // Releases model resources if no longer used.
