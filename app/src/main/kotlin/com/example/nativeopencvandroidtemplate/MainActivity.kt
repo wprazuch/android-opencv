@@ -13,7 +13,7 @@ import android.util.Log
 import android.view.SurfaceView
 import android.view.WindowManager
 import android.widget.Toast
-import com.example.nativeopencvandroidtemplate.ml.KerasSavedTextRecognizer
+//import com.example.nativeopencvandroidtemplate.ml.KerasSavedTextRecognizer
 import org.opencv.android.BaseLoaderCallback
 import org.opencv.android.CameraBridgeViewBase
 import org.opencv.android.LoaderCallbackInterface
@@ -31,6 +31,7 @@ import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.Tensor
 import org.tensorflow.lite.support.common.ops.NormalizeOp
 import org.tensorflow.lite.support.image.ImageProcessor
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
@@ -147,7 +148,7 @@ class MainActivity : Activity() {
         var remapped = false
 
         var bitmap = BitmapFactory.decodeResource(getResources(),
-            R.drawable.cropped_box_1)
+            R.drawable.cropped_box_3)
 
         // using mat class
         val mapped_crop = Mat()
@@ -287,7 +288,15 @@ class MainActivity : Activity() {
         var input_ = interpreter.getInputTensor(0)
         var output_ = interpreter.getOutputTensor(0)
 
-        interpreter.run(input_, output_)
+//        var input_2 = Tensor(tensorImage.tensorBuffer)
+
+        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
+        inputFeature0.loadBuffer(tensorImage.buffer)
+
+//        val outputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 124), DataType.FLOAT32)
+        val outputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 3968), DataType.FLOAT32)
+
+        interpreter.run(inputFeature0.buffer, outputFeature0.buffer)
 
 //        input_ = tensorImage.tensorBuffer
         println("TESTEST")
@@ -309,7 +318,32 @@ class MainActivity : Activity() {
 //        model.close()
 
 
+        val MODEL_POSTPROCESSOR_ASSETS_PATH = "text_recognizer_postprocessor.tflite"
+        val assetFileDescriptor2 = assets.openFd(MODEL_POSTPROCESSOR_ASSETS_PATH)
+        val fileInputStream2 = FileInputStream(assetFileDescriptor2.getFileDescriptor())
+        val fileChannel2 = fileInputStream2.getChannel()
+        val startoffset2 = assetFileDescriptor2.getStartOffset()
+        val declaredLength2 = assetFileDescriptor2.getDeclaredLength()
+        val modelFile2 =  fileChannel2.map(FileChannel.MapMode.READ_ONLY, startoffset2, declaredLength2)
+
+        val interpreter2 = Interpreter( modelFile2 )
+
+        var input_2 = interpreter2.getInputTensor(0)
+        var output_2 = interpreter2.getOutputTensor(0)
+
+        val inputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 124), DataType.FLOAT32)
+        inputFeature02.loadBuffer(tensorImage.buffer)
+
+//        val outputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 124), DataType.FLOAT32)
+        val outputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 3968), DataType.FLOAT32)
+
+        interpreter2.run(inputFeature02.buffer, outputFeature02.buffer)
+
         println("TESTESTES2")
+
+
+
+
 //        val tfliteModel = File(assets.open("keras_saved_text_recognizer").toString())
 //        val tfliteBuffer = tfliteModel.readBytes()
 //        val tfliteModelBuffer = ByteBuffer.allocateDirect(tfliteBuffer.size)
