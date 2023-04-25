@@ -332,12 +332,27 @@ class MainActivity : Activity() {
         var output_2 = interpreter2.getOutputTensor(0)
 
         val inputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 124), DataType.FLOAT32)
-        inputFeature02.loadBuffer(tensorImage.buffer)
+        inputFeature02.loadBuffer(outputFeature0.buffer)
 
 //        val outputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 124), DataType.FLOAT32)
-        val outputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 3968), DataType.FLOAT32)
+//        val outputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 1), DataType.STRING)
+
+        val outputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 400), DataType.UINT8)
 
         interpreter2.run(inputFeature02.buffer, outputFeature02.buffer)
+
+        val sb = StringBuilder()
+
+// Iterate over the output tensor data and append it to the StringBuilder
+        val outputSize2 = output_2.shape()[0].toInt()
+        for (i in 0 until outputSize2) {
+            sb.append("a")
+            sb.append(" ")
+        }
+
+// Convert the StringBuilder object to a String and print it
+        val outputString = sb.toString()
+        println(outputString)
 
         println("TESTESTES2")
 
