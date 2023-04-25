@@ -125,39 +125,8 @@ class MainActivity : Activity() {
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
         }
 
-        var cropPath = "/Users/wprazuch/Projects/Netguru/letsmark-ocr/data/cropped_box_2.jpg"
-
-//        val crop = Imgcodecs.imread(getResources().getDrawable(R.drawable.cropped_box_1))
-
-//        var bitmap = getResources().getDrawable(R.drawable.cropped_box_1)
-//        var bitmap = MediaStore.Images.Media.getBitmap(R.drawable.cropped_box_1)
-//        bitmap= MediaStore.Images.Media.getBitmap(this.getContentResolver(),data.getData());
-//        imageView.setImageBitmap(bitmap);
-
-        val splitWideCrops = true
-        val criticalAr = 8
-        val targetAr = 6
-        val dilFactor = 1.4
-        val outputSize = Size(32.0, 128.0)
-        val preserveAspectRatio = true
-        val symmetricPad = false
-        val method = Imgproc.INTER_LINEAR
-        val vocab = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~°àâéèêëîïôùûçÀÂÉÈËÎÏÔÙÛÇ£€¥¢฿"
-        val beamWidth = 1
-        val topPaths = 1
-        var remapped = false
-
         var bitmap = BitmapFactory.decodeResource(getResources(),
-            R.drawable.cropped_box_3)
-
-        // using mat class
-        val mapped_crop = Mat()
-        Utils.bitmapToMat(bitmap,mapped_crop)
-
-        println("TESTESTEST")
-
-        println("TESTESTES")
-
+            R.drawable.cropped_box_1)
 
         val MODEL_ASSETS_PATH = "text_recognizer.tflite"
         val assetFileDescriptor = assets.openFd(MODEL_ASSETS_PATH)
@@ -180,37 +149,12 @@ class MainActivity : Activity() {
         tensorImage = imageProcessor.process(tensorImage)
 
 
-        var input_ = interpreter.getInputTensor(0)
-        var output_ = interpreter.getOutputTensor(0)
-
-
         val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
         inputFeature0.loadBuffer(tensorImage.buffer)
 
-//        val outputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 124), DataType.FLOAT32)
         val outputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 3968), DataType.FLOAT32)
 
         interpreter.run(inputFeature0.buffer, outputFeature0.buffer)
-
-//        input_ = tensorImage.tensorBuffer
-        println("TESTEST")
-//        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
-//        inputFeature0.loadBuffer(tensorImage.buffer)
-//        val outputs = interpreter.run(inputFeature0, )
-//
-//        println(tensorImage.dataType)
-//
-//// Creates inputs for reference.
-//        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
-//        inputFeature0.loadBuffer(tensorImage.buffer)
-//
-//// Runs model inference and gets result.
-//        val outputs = model.process(inputFeature0)
-//        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
-//
-//// Releases model resources if no longer used.
-//        model.close()
-
 
         val MODEL_POSTPROCESSOR_ASSETS_PATH = "text_recognizer_postprocessor.tflite"
         val assetFileDescriptor2 = assets.openFd(MODEL_POSTPROCESSOR_ASSETS_PATH)
@@ -222,14 +166,9 @@ class MainActivity : Activity() {
 
         val interpreter2 = Interpreter( modelFile2 )
 
-        var input_2 = interpreter2.getInputTensor(0)
-        var output_2 = interpreter2.getOutputTensor(0)
 
         val inputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 124), DataType.FLOAT32)
         inputFeature02.loadBuffer(outputFeature0.buffer)
-
-//        val outputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 124), DataType.FLOAT32)
-//        val outputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 1, 1), DataType.STRING)
 
         val outputFeature02 = TensorBuffer.createFixedSize(intArrayOf(1, 400), DataType.UINT8)
 
@@ -242,99 +181,6 @@ class MainActivity : Activity() {
 
 
 
-//        val tfliteModel = File(assets.open("keras_saved_text_recognizer").toString())
-//        val tfliteBuffer = tfliteModel.readBytes()
-//        val tfliteModelBuffer = ByteBuffer.allocateDirect(tfliteBuffer.size)
-//        tfliteModelBuffer.order(ByteOrder.nativeOrder())
-//        tfliteModelBuffer.put(tfliteBuffer)
-//
-//        val tflite = Interpreter(tfliteModelBuffer)
-//
-//        val inputShape = tflite.getInputTensor(0).shape()
-//        val inputDataType = tflite.getInputTensor(0).dataType()
-//        val inputBuffer = ByteBuffer.allocateDirect(4 * inputShape[1] * inputShape[2] * inputShape[3])
-//        inputBuffer.order(ByteOrder.nativeOrder())
-
-// Fill the input buffer with your input data
-// ...
-
-//        val inputs = arrayOf(inputBuffer)
-
-
-//        val model = KerasSavedTextRecognizer.newInstance(this)
-//        val bitmap2 = Bitmap.createBitmap(paddedImg.cols(), paddedImg.rows(), Bitmap.Config.RGBA_F16)
-//        var tensorImage = TensorImage.fromBitmap(bitmap)
-//
-//        val imageProcessorBuilder = ImageProcessor.Builder()
-//        imageProcessorBuilder.add(ResizeOp(32, 128, ResizeOp.ResizeMethod.NEAREST_NEIGHBOR))
-//        imageProcessorBuilder.add(NormalizeOp(0.0f, 255.0f))
-//        imageProcessorBuilder.add(NormalizeOp(0.694f, 0.299f))
-//        val imageProcessor = imageProcessorBuilder.build()
-//
-//
-//        tensorImage = imageProcessor.process(tensorImage)
-//
-//// Creates inputs for reference.
-//        val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
-//        val bitmap2 = Bitmap.createBitmap(paddedImg.cols(), paddedImg.rows(), Bitmap.Config.RGBA_F16)
-//        Utils.matToBitmap(paddedImg, bitmap2)
-//        val byteBuffer = ByteBuffer.allocate(bitmap2.byteCount)
-//        bitmap2.copyPixelsToBuffer(byteBuffer)
-//        val pixels = ByteArray(paddedImg.total().toInt() * paddedImg.channels())
-//        paddedImg.get(0, 0, pixels)
-//        val byteBuffer = ByteBuffer.wrap(pixels)
-//        val matOfDouble = MatOfDouble()
-//        paddedImg.convertTo(matOfDouble, CvType.CV_64FC3)
-//        val pixelValues = matOfDouble.toArray()
-
-//        val numElements = paddedImg.total().toInt() * paddedImg.channels()
-//        val floatBuffer = FloatArray(numElements)
-//        paddedImg.convertTo(paddedImg, CvType.CV_32FC1)
-//        paddedImg.get(0, 0, floatBuffer)
-
-//        val byteOrder = ByteOrder.nativeOrder()
-//// Calculate the number of pixels in the image
-//        val pixelCount = paddedImg.width() * paddedImg.height()
-//// Allocate enough space for the pixel data
-//        val bufferSize = pixelCount * 3 // assuming 3 channels (RGB)
-//        val buffer = ByteBuffer.allocateDirect(bufferSize)
-//        buffer.order(byteOrder)
-//
-//        paddedImg.get(0, 0, pixelValues)
-
-
-//        inputFeature0.loadBuffer(tensorImage.tensorBuffer.buffer, intArrayOf(1, 32, 128, 3))
-//
-//// Runs model inference and gets result.
-//        val outputs = model.process(inputFeature0)
-//        val outputFeature0 = outputs.outputFeature0AsTensorBuffer
-//
-//        model.close()
-
-
-// Releases model resources if no longer used.
-
-//        val text_recognizer_path = ""
-//        val loaded_recognizer_file = File(text_recognizer_path)
-//        val recognizerInterpreterOptions = Interpreter.Options()
-//
-////        val modelFile = File("path/to/your/tflite/model/file")
-////        val interpreterOptions = Interpreter.Options()
-////        val interpreter = Interpreter(modelFile, interpreterOptions)
-//
-//        val tfLiteModel = Interpreter(loaded_recognizer_file, recognizerInterpreterOptions)
-//        val inputDetails = tfLiteModel.getInputTensor(0).tensorShape
-//        val outputDetails = tfLiteModel.getOutputTensor(0).tensorShape
-//        tfLiteModel.setTensor(inputDetails[0].index, batches)
-//        tfLiteModel.run()
-//        val outputData = tfLiteModel.getOutputTensor(0).buffer
-//
-//        val postprocessorTflite = Interpreter(File(TEXT_RECOGNIZER_POSTPROCESSOR_DOCTR_TFLITE_PATH))
-//        val inputDetails = postprocessorTflite.getInputTensor(0).tensorShape
-//        val outputDetails = postprocessorTflite.getOutputTensor(0).tensorShape
-//        postprocessorTflite.setTensor(inputDetails[0].index, outputData)
-//        postprocessorTflite.run()
-//        val output = postprocessorTflite.getOutputTensor(0).buffer
     }
 
     companion object {
