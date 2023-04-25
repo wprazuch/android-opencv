@@ -156,110 +156,7 @@ class MainActivity : Activity() {
 
         println("TESTESTEST")
 
-//        var crop = Mat()
-
-//        if (mapped_crop.type() == CvType.CV_8U) {
-//            crop.convertTo(crop, CvType.CV_64FC3)
-//            Core.divide(crop, Scalar(255.0), crop)
-//        }
-//        else if (mapped_crop.type() == CvType.CV_8UC4) {
-//            Imgproc.cvtColor(mapped_crop, crop, Imgproc.COLOR_RGBA2RGB)
-//            crop.convertTo(crop, CvType.CV_64FC3)
-//            Core.divide(crop, Scalar(255.0), crop)
-//        }
-
-//        Imgproc.resize(crop, crop, outputSize, 0.0, 0.0, Imgproc.INTER_LINEAR)
-
-// In that case we need to pad because we want to enforce both width and height
-        val offset = Pair(0, 0)
-//        val paddedImg = padToBoundingBox(crop, offset.first, offset.second, 32, 128)
-
-//        val batches = listOf(paddedImg)
-
-
-
-////        val mean = MatOfDouble(0.6940000057220459, 0.6949999928474426, 0.6930000185966492)
-////        val std = MatOfDouble(0.299, 0.296, 0.301)
-//
-//        val width = 32
-//        val height = 128
-//        val depth = 3
-//        val arr = Array(width) { Array(height) { DoubleArray(depth) } }
-//
-//        // Fill the array with unique values for each channel
-//        for (i in 0 until width) {
-//            for (j in 0 until height) {
-//                arr[i][j][0] = 0.6940000057220459
-//                arr[i][j][1] = 0.6949999928474426
-//                arr[i][j][2] = 0.6930000185966492
-//            }
-//        }
-//
-//        // Create a Mat object from the array
-//        val mean = Mat(width, height, CvType.CV_64FC3)
-//        for (i in 0 until width) {
-//            for (j in 0 until height) {
-//                mean.put(i, j, *arr[i][j])
-//            }
-//        }
-//
-//        // Fill the array with unique values for each channel
-//        for (i in 0 until width) {
-//            for (j in 0 until height) {
-//                arr[i][j][0] = 0.299
-//                arr[i][j][1] = 0.296
-//                arr[i][j][2] = 0.301
-//            }
-//        }
-//
-//        // Create a Mat object from the array
-//        val std = Mat(width, height, CvType.CV_64FC3)
-//        for (i in 0 until width) {
-//            for (j in 0 until height) {
-//                std.put(i, j, *arr[i][j])
-//            }
-//        }
-
-//        val mean = MatOfDouble(128, 32, CvType.CV_64FC3)
-//        for (i in 0 until mean.rows()) {
-//            for (j in 0 until mean.cols()) {
-//                val values = doubleArrayOf(1.0, 2.0, 3.0)
-//                mean.put(i, j, *values)
-//            }
-//        }
-
-//        val meanMat = Mat(1, 1, CvType.CV_64FC3)
-//        meanMat.put(0, 0, 0.6940000057220459, 0.6949999928474426, 0.6930000185966492)
-//        val newMeanMat = meanMat.reshape(3, ArrayOf(128, 3, 3))
-
-        // create a DoubleArray with 128 copies of mean values
-//        val meanArray = DoubleArray(128 * 3 * 3) { i ->
-//            val index = i % 9
-//            when (index) {
-//                0, 1, 2 -> mean[index]
-//                else -> 0.0
-//            }
-//        }
-
-        // reshape the DoubleArray into a Mat object of size 128x3x3
-//        val meanMat = Mat(128, 3, CvType.CV_64FC3, meanArray).reshape(3, intArrayOf(128, 3, 3))
-
-//        Core.subtract(paddedImg, mean, paddedImg)
-//        Core.divide(paddedImg, std, paddedImg)
-
-//        Core.subtract(paddedImg, Scalar(0.694), paddedImg)
-//        Core.divide(paddedImg, Scalar(0.299), paddedImg)
-
-
-
-
-
-
         println("TESTESTES")
-//
-//        val modelFile = "keras_saved_text_recognizer"
-//        val model = Interpreter(loadModelFile(this, modelFile))
-//        val (inputShape, outputShape) = getModelInputOutputShapes(model)
 
 
         val MODEL_ASSETS_PATH = "text_recognizer.tflite"
@@ -271,9 +168,7 @@ class MainActivity : Activity() {
         val modelFile =  fileChannel.map(FileChannel.MapMode.READ_ONLY, startoffset, declaredLength)
 
         val interpreter = Interpreter( modelFile )
-//        interpreter.run( inputs , outputs )
 
-//        val model = KerasSavedTextRecognizer.newInstance(this)
         var tensorImage = TensorImage.fromBitmap(bitmap)
 
         val imageProcessorBuilder = ImageProcessor.Builder()
@@ -288,7 +183,6 @@ class MainActivity : Activity() {
         var input_ = interpreter.getInputTensor(0)
         var output_ = interpreter.getOutputTensor(0)
 
-//        var input_2 = Tensor(tensorImage.tensorBuffer)
 
         val inputFeature0 = TensorBuffer.createFixedSize(intArrayOf(1, 32, 128, 3), DataType.FLOAT32)
         inputFeature0.loadBuffer(tensorImage.buffer)
@@ -341,20 +235,9 @@ class MainActivity : Activity() {
 
         interpreter2.run(inputFeature02.buffer, outputFeature02.buffer)
 
-        val sb = StringBuilder()
+        val outputText = String(outputFeature02.buffer.array(), Charsets.UTF_8)
 
-// Iterate over the output tensor data and append it to the StringBuilder
-        val outputSize2 = output_2.shape()[0].toInt()
-        for (i in 0 until outputSize2) {
-            sb.append("a")
-            sb.append(" ")
-        }
-
-// Convert the StringBuilder object to a String and print it
-        val outputString = sb.toString()
-        println(outputString)
-
-        println("TESTESTES2")
+        println(outputText)
 
 
 
