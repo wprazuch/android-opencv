@@ -117,14 +117,6 @@ class MainActivity : Activity() {
 
         setContentView(R.layout.activity_main)
 
-        if (!OpenCVLoader.initDebug()) {
-            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization")
-            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION, this, mLoaderCallback)
-        } else {
-            Log.d(TAG, "OpenCV library found inside package. Using it!")
-            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS)
-        }
-
         var bitmap = BitmapFactory.decodeResource(getResources(),
             R.drawable.cropped_box_1)
 
