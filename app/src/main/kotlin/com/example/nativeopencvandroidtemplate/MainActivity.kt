@@ -9,7 +9,6 @@ import android.os.Bundle
 import androidx.core.app.ActivityCompat
 import android.util.Log
 import android.view.WindowManager
-//import com.example.nativeopencvandroidtemplate.ml.KerasSavedTextRecognizer
 import org.opencv.android.BaseLoaderCallback
 import org.opencv.android.LoaderCallbackInterface
 import org.tensorflow.lite.DataType
